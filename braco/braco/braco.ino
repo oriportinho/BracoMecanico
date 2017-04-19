@@ -1,5 +1,8 @@
 #include <VarSpeedServo.h>
 
+// Flag de controle do debugger, se true ele vai imprimir todos so debugadores
+bool flagDebugger = false;
+
 // Controles de maximo e minimo de angulo
 int motorAngMax0 =  90; // cintura     3
 int motorAngMin0 =   0;
@@ -64,105 +67,119 @@ void setup() {
 }
 
 void loop() {
-
+//debugger("funcionando");
   if(Serial.available() > 0) {
     String dado = Serial.readString();
 
+    debugger("lido|" + dado + "|porta Serial");
+
     if(dado.length() >= 4 && dado.charAt(1) == '0') {
+      debugger("dado com tamanho valido e primeiro digito = 0");
       if(dado.charAt(2) == '0' || dado.charAt(2) == '1') {
+        debugger("recebido 0 ou 1");
         Serial.println("#00$");
         Serial.println("#01$");
 
-        if(dado.charAt(2) == '2') { // Mover para posicao inicial
-          Serial.println("#00$");
-          executarSalvo(0);
-          Serial.println("#01$");
+      } else if(dado.charAt(2) == '2') { // Mover para posicao inicial
+        debugger("recebido 2");
+        Serial.println("#00$");
+        executarSalvo(0);
+        Serial.println("#01$");
 
-        } else if(dado.charAt(2) == '3') { // Mover para a posicao dada
-          Serial.println("#00$");
-          int velocidadeMotor = (dado.substring(4, 6)).toInt();
-          int j = 0;
-          for(int i = 7; i < 37; i+=5) {
-            int val = (dado.substring(i, i+4)).toInt();
-            movimentarMotorSerial(j, val, velocidadeMotor);
-            j++;
-          }
-          Serial.println("#01$");
-
-        } else if(dado.charAt(2) == '4') { // Salvar ultima posicao
-          Serial.println("#00$");
-
-          if(ponteiroEstado >= 6) {
-            ponteiroEstado = 1;
-          }
-          for(int i =0; i <= 5; i++) {
-            salvarMotor(ponteiroEstado, estadoSalvo[7][i], estadoSalvo[7][6], i);
-          }
-          ponteiroEstado++;
-
-          Serial.println("#01$");
-
-        } else if(dado.charAt(2) == '5') { // Salvar ultima posciao em
-          Serial.println("#00$");
-          int posicaoSalvar = (int) (dado.charAt(5) - '0');
-          for(int i =0; i <= 5; i++) {
-            salvarMotor(ponteiroEstado, estadoSalvo[posicaoSalvar][i], estadoSalvo[posicaoSalvar][6], i);
-          }
-          ponteiroEstado++;
-          Serial.println("#01$");
-
-        } else if(dado.charAt(2) == '6') { // Executar todas as posicoes salvas
-          Serial.println("#00$");
-
-          for(int i = 1; i <= 6; i++) {
-            executarSalvo(i);
-            delay(temporizadorComando);
-          }
-
-          Serial.println("#01$");
-
-        } else if(dado.charAt(2) == '7') { // Executar em ordem as posicoes
-          Serial.println("#00$");
-
-          for(int i = 5; i < (int) dado.length(); i++) {
-
-            if( dado.charAt(i) == '0' || dado.charAt(i) == '1' || dado.charAt(i) == '2' ||
-            dado.charAt(i) == '3' || dado.charAt(i) == '4' || dado.charAt(i) == '5' ||
-            dado.charAt(i) == '6' || dado.charAt(i) == '7') {
-
-              int numeroId = (int) (dado.charAt(i) - '0');
-              executarSalvo(numeroId);
-              i++;
-            } else {
-              break;
-            }
-          }
-          Serial.println("#01$");
-
-        } else if(dado.charAt(2) == '8') {
-          Serial.println("#00$");
-
-          Serial.println("#01$");
-
-        } else {
-          erro(); // numero invalido
+      } else if(dado.charAt(2) == '3') { // Mover para a posicao dada
+        debugger("recebido 3");
+        Serial.println("#00$");
+        int velocidadeMotor = (dado.substring(4, 6)).toInt();
+        int j = 0;
+        for(int i = 7; i < 37; i+=5) {
+          int val = (dado.substring(i, i+4)).toInt();
+          movimentarMotorSerial(j, val, velocidadeMotor);
+          j++;
         }
+        Serial.println("#01$");
+
+      } else if(dado.charAt(2) == '4') { // Salvar ultima posicao
+        debugger("recebido 4");
+        Serial.println("#00$");
+
+        if(ponteiroEstado >= 6) {
+          ponteiroEstado = 1;
+        }
+        for(int i =0; i <= 5; i++) {
+          salvarMotor(ponteiroEstado, estadoSalvo[7][i], estadoSalvo[7][6], i);
+        }
+        ponteiroEstado++;
+
+        Serial.println("#01$");
+
+      } else if(dado.charAt(2) == '5') { // Salvar ultima posciao em
+        debugger("recebido 5");
+        Serial.println("#00$");
+        int posicaoSalvar = (int) (dado.charAt(5) - '0');
+        for(int i =0; i <= 5; i++) {
+          salvarMotor(ponteiroEstado, estadoSalvo[posicaoSalvar][i], estadoSalvo[posicaoSalvar][6], i);
+        }
+        ponteiroEstado++;
+        Serial.println("#01$");
+
+      } else if(dado.charAt(2) == '6') { // Executar todas as posicoes salvas
+        debugger("recebido 6");
+        Serial.println("#00$");
+
+        for(int i = 1; i <= 6; i++) {
+          executarSalvo(i);
+          delay(temporizadorComando);
+        }
+
+        Serial.println("#01$");
+
+      } else if(dado.charAt(2) == '7') { // Executar em ordem as posicoes
+        debugger("recebido 7");
+        Serial.println("#00$");
+
+        for(int i = 5; i < (int) dado.length(); i++) {
+
+          if( dado.charAt(i) == '0' || dado.charAt(i) == '1' || dado.charAt(i) == '2' ||
+          dado.charAt(i) == '3' || dado.charAt(i) == '4' || dado.charAt(i) == '5' ||
+          dado.charAt(i) == '6' || dado.charAt(i) == '7') {
+
+            int numeroId = (int) (dado.charAt(i) - '0');
+            executarSalvo(numeroId);
+            i++;
+          } else {
+            break;
+          }
+        }
+        Serial.println("#01$");
+
+      } else if(dado.charAt(2) == '8') {
+        debugger("recebido 8");
+        Serial.println("#00$");
+
+        Serial.println("#01$");
+
       } else {
-        erro(); // tamanho invalido
+        debugger("erro de numero invalido");
+        erro(); // numero invalido
       }
+    } else {
+      debugger("erro de tamanho invalido");
+      erro(); // tamanho invalido
     }
   }
-  delay(500);
+delay(500);
 }
 
 // Salva a posicao de um motor e a velocidade
 void salvarMotor(int posicao, int movimento, byte velocidade, byte motor) {
+  //debugger("salvar motor " + motor + " com velocidade " + velocidade + "em posicao " + posicao + "");
   estadoSalvo[posicao][motor] = movimento;
   estadoSalvo[posicao][6] = velocidade;
 }
 
 // Metodo para executar um movimento salvo na memoria do robo
 void executarSalvo(int posicao) {
+  debugger("executar posicao " + posicao);
   movimentarMotorAngulo(0, estadoSalvo[posicao][0], estadoSalvo[posicao][6]);
   movimentarMotorAngulo(1, estadoSalvo[posicao][1], estadoSalvo[posicao][6]);
   movimentarMotorAngulo(2, estadoSalvo[posicao][2], estadoSalvo[posicao][6]);
@@ -173,16 +190,21 @@ void executarSalvo(int posicao) {
 
 // Metodo de aviso de erro dentro do sistema usando a led
 void erro() {
-  while(true) {
+  Serial.println("#99$");
+
+  for(int i = 0; i < 5; i++) {
     digitalWrite( 2, HIGH);
-    delay(500);
+    delay(250);
     digitalWrite( 2,  LOW);
-    delay(500);
+    delay(250);
   }
+
+  digitalWrite( 2, HIGH);
 }
 
 // Metodo para controle de motor, numero do motor 0 a 5, movimento entre os limites de cada motor, velocidade entre 0 e 2
 void movimentarMotorAngulo(int numeroServo, int val, int velocidade) {
+  //debugger("movimentar motor " + numeroServo + " para  posicao " + val + " com velocidade de " + velocidade);
   estadoSalvo[7][numeroServo] = val;
   estadoSalvo[7][6] = velocidade;
 
@@ -253,6 +275,7 @@ void movimentarMotorAngulo(int numeroServo, int val, int velocidade) {
 
 // Metodo para controle de motor, numero do motor 0 a 5, movimento entre 0 e 1023, velocidade entre 0 e 2
 void movimentarMotorSerial(int numeroServo, int val, int velocidade) {
+  //debugger("movimentar motor com serial " + numeroServo + " para  posicao " + val + " com velocidade de " + velocidade);
   if(numeroServo == 0) {
     val = map(val, 0, 1023, motorAngMax0, motorAngMin0);
 
@@ -421,4 +444,10 @@ void resetarPosicao() {
   estadoSalvo[7][4] = ini5;
   estadoSalvo[7][5] = ini6;
   estadoSalvo[7][6] = ini7;
+}
+
+// Metodo para imprimir na tela o sistema de debugg
+void debugger(String bug) {
+  if(flagDebugger)
+    Serial.println(bug);
 }
