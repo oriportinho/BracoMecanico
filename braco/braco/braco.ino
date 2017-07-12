@@ -35,11 +35,11 @@ int motorPin5 = 13;
 // Velocidades de movimentacao
 int rapido  = 254; // 0
 int medio   = 175; // 1
-int devagar = 100; // 2
+int devagar =  70; // 2
 
 // Tempo de espera para poder criar uma conexao serial
 int temporizadorMax = 10000;
-int temporizadorComando = 200;
+int temporizadorComando = 250;
 
 int estadoSalvo [8][7];
 int ponteiroEstado = 1;
@@ -55,7 +55,6 @@ void setup() {
   motor3.attach(motorPin3);
   motor4.attach(motorPin4);
   motor5.attach(motorPin5);
-  //posicaoInicial();
 
   // Iniciar comunicacao serial
   Serial.begin(9600);
@@ -70,7 +69,6 @@ void loop() {
 //debugger("funcionando");
   if(Serial.available() > 0) {
     String dado = Serial.readString();
-
     debugger("lido|" + dado + "|porta Serial");
 
     if(dado.length() >= 4 && dado.charAt(1) == '0') {
@@ -93,6 +91,7 @@ void loop() {
         int j = 0;
         for(int i = 7; i < 37; i+=5) {
           int val = (dado.substring(i, i+4)).toInt();
+          debugger("#velocidade" + String(velocidadeMotor) + "$");
           movimentarMotorSerial(j, val, velocidadeMotor);
           j++;
         }
@@ -119,7 +118,6 @@ void loop() {
         for(int i =0; i <= 5; i++) {
           salvarMotor(ponteiroEstado, estadoSalvo[posicaoSalvar][i], estadoSalvo[posicaoSalvar][6], i);
         }
-        ponteiroEstado++;
         Serial.println("#01$");
 
       } else if(dado.charAt(2) == '6') { // Executar todas as posicoes salvas
@@ -155,7 +153,20 @@ void loop() {
       } else if(dado.charAt(2) == '8') {
         debugger("recebido 8");
         Serial.println("#00$");
+        resetarPosicao();
+        Serial.println("#01$");
 
+      } else if(dado.charAt(2) == '9') {
+        debugger("recebido 9");
+        Serial.println("#00$");
+        /*int velocidadeMotor = (dado.substring(4, 6)).toInt();
+        int j = 0;
+        for(int i = 7; i < 37; i+=5) {
+          int val = (dado.substring(i, i+4)).toInt();
+          debugger("#velocidade" + String(velocidadeMotor) + "$");
+          movimentarMotorSerial(j, val, velocidadeMotor);
+          j++;
+        }*/
         Serial.println("#01$");
 
       } else {
@@ -277,7 +288,7 @@ void movimentarMotorAngulo(int numeroServo, int val, int velocidade) {
 void movimentarMotorSerial(int numeroServo, int val, int velocidade) {
   //debugger("movimentar motor com serial " + numeroServo + " para  posicao " + val + " com velocidade de " + velocidade);
   if(numeroServo == 0) {
-    val = map(val, 0, 1023, motorAngMax0, motorAngMin0);
+    val = map(val, 0, 1023, motorAngMin0, motorAngMax0);
 
     if(velocidade == 0) {
       motor0.write(val, rapido, true);
@@ -292,7 +303,7 @@ void movimentarMotorSerial(int numeroServo, int val, int velocidade) {
     estadoSalvo[7][6] = velocidade;
 
   } else if(numeroServo == 1) {
-    val = map(val, 0, 1023, motorAngMax1, motorAngMin1);
+    val = map(val, 0, 1023, motorAngMin1, motorAngMax1);
 
     if(velocidade == 0) {
       motor1.write(val, rapido, true);
@@ -307,7 +318,7 @@ void movimentarMotorSerial(int numeroServo, int val, int velocidade) {
     estadoSalvo[7][6] = velocidade;
 
   } else if(numeroServo == 2) {
-    val = map(val, 0, 1023, motorAngMax2, motorAngMin2);
+    val = map(val, 0, 1023, motorAngMin2, motorAngMax2);
 
     if(velocidade == 0) {
       motor2.write(val, rapido, true);
@@ -322,7 +333,7 @@ void movimentarMotorSerial(int numeroServo, int val, int velocidade) {
     estadoSalvo[7][6] = velocidade;
 
   } else if(numeroServo == 3) {
-    val = map(val, 0, 1023, motorAngMax3, motorAngMin3);
+    val = map(val, 0, 1023, motorAngMin3, motorAngMax3);
 
     if(velocidade == 0) {
       motor3.write(val, rapido, true);
@@ -337,7 +348,7 @@ void movimentarMotorSerial(int numeroServo, int val, int velocidade) {
     estadoSalvo[7][6] = velocidade;
 
   } else if(numeroServo == 4) {
-    val = map(val, 0, 1023, motorAngMax4, motorAngMin4);
+    val = map(val, 0, 1023, motorAngMin4, motorAngMax4);
 
     if(velocidade == 0) {
       motor4.write(val, rapido, true);
@@ -352,7 +363,7 @@ void movimentarMotorSerial(int numeroServo, int val, int velocidade) {
     estadoSalvo[7][6] = velocidade;
 
   } else if(numeroServo == 5) {
-    val = map(val, 0, 1023, motorAngMax5, motorAngMin5);
+    val = map(val, 0, 1023, motorAngMin5, motorAngMax5);
 
     if(velocidade == 0) {
       motor5.write(val, rapido, true);
